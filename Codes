@@ -1,0 +1,583 @@
+--- Seismic Data Loading and Encoding Handling ---
+
+import pandas as pd
+# Veri dosyasını yükleme
+file_path = 'C:\\Users\\Burhan Yasa\\Desktop\\depremveri.txt'
+
+# latin1 kodlamasıyla dosyayı okuma
+try:
+    df = pd.read_csv(file_path, delimiter='\t', encoding='latin1')
+    print("Dosya 'latin1' kodlamasıyla başarıyla okundu.")
+except UnicodeDecodeError:
+    print("Dosya 'latin1' kodlamasıyla okunamadı.")
+
+# iso-8859-9 kodlamasıyla dosyayı okuma
+try:
+    df = pd.read_csv(file_path, delimiter='\t', encoding='iso-8859-9')
+    print("Dosya 'iso-8859-9' kodlamasıyla başarıyla okundu.")
+except UnicodeDecodeError:
+    print("Dosya 'iso-8859-9' kodlamasıyla okunamadı.")
+    
+# İlk birkaç satırı inceleme
+print(df.head())  
+
+
+
+----Datetime Conversion and Data Cleaning for Seismic Data----
+
+
+# Tarih ve zaman sütunlarını birleştirip datetime formatına dönüştürme
+df['Olus tarihi'] = df['Olus tarihi'].str.replace('.', '-')
+df['datetime'] = pd.to_datetime(df['Olus tarihi'] + ' ' + df['Olus zamani'])
+
+# İhtiyaç duyulan sütunları seçme
+df = df[['datetime', 'Enlem', 'Boylam', 'Der(km)', 'Mw']]
+
+# Tarih sütununu indeks olarak ayarlama
+df.set_index('datetime', inplace=True)
+
+# Sütun isimlerini daha okunabilir hale getirme
+df.columns = ['Latitude', 'Longitude', 'Depth_km', 'Magnitude']
+
+# Temizlenmiş veriyi inceleme
+print(df.head())
+print(df.info())
+
+
+----Visualization----
+
+# Deprem büyüklüğünün histogramı ve yoğunluk grafiği
+plt.figure(figsize=(12, 6))
+plt.hist(df['Magnitude'], bins=20, density=True, alpha=0.75, color='b', edgecolor='black')
+df['Magnitude'].plot(kind='kde', color='red')
+plt.title('Deprem Büyüklüğü Dağılımı')
+plt.xlabel('Deprem Büyüklüğü (Mw)')
+plt.ylabel('Yoğunluk')
+plt.grid(True)
+plt.show()
+
+import matplotlib.pyplot as plt
+
+# Günlük deprem sayısını hesaplama
+daily_earthquakes = df.resample('D').size()
+
+# Zaman serisini çizme
+plt.figure(figsize=(12, 6))
+plt.plot(daily_earthquakes, label='Günlük Deprem Sayısı')
+plt.xlabel('Tarih')
+plt.ylabel('Deprem Sayısı')
+plt.title('Günlük Deprem Sayısı ')
+plt.legend()
+plt.show()
+
+# Büyüklük dağılımını histogram ile görselleştirme
+plt.figure(figsize=(12, 6))
+plt.hist(df['Magnitude'], bins=30, edgecolor='k')
+plt.xlabel('Deprem Büyüklüğü (Mw)')
+plt.ylabel('Deprem Sayısı')
+plt.title('Deprem Büyüklük Dağılımı')
+plt.show()
+
+# Derinlik dağılımını histogram ile görselleştirme
+plt.figure(figsize=(12, 6))
+plt.hist(df['Depth_km'], bins=30, edgecolor='k')
+plt.xlabel('Deprem Derinliği (km)')
+plt.ylabel('Deprem Sayısı')
+plt.title('Deprem Derinlik Dağılımı')
+plt.show()
+
+
+-------ARIMA------
+
+import statsmodels.api as sm
+
+# ARIMA modeli oluşturma ve tahmin
+model = sm.tsa.ARIMA(daily_earthquakes, order=(5, 1, 0))
+results = model.fit()
+
+# Tahminleri çizme
+plt.figure(figsize=(12, 6))
+plt.plot(daily_earthquakes, label='Günlük Deprem Sayısı')
+plt.plot(results.fittedvalues, color='red', label='Tahmin')
+plt.xlabel('Tarih')
+plt.ylabel('Deprem Sayısı')
+plt.title('ARIMA Modeli ile Tahminler')
+plt.legend()
+plt.show()
+
+# Gelecek için tahmin yapma
+forecast = results.get_forecast(steps=30)
+forecast_index = pd.date_range(start=daily_earthquakes.index[-1], periods=30, freq='D')
+forecast_values = forecast.predicted_mean
+forecast_conf_int = forecast.conf_int()
+
+# Tahminleri ve güven aralıklarını çizme
+plt.figure(figsize=(12, 6))
+plt.plot(daily_earthquakes, label='Günlük Deprem Sayısı')
+plt.plot(forecast_index, forecast_values, color='red', label='Tahmin')
+plt.fill_between(forecast_index, forecast_conf_int.iloc[:, 0], forecast_conf_int.iloc[:, 1], color='red', alpha=0.3)
+plt.xlabel('Tarih')
+plt.ylabel('Deprem Sayısı')
+plt.title('Gelecek 30 Günlük Deprem Tahminleri')
+plt.legend()
+plt.show()
+
+
+----------Folium ile Harita Üzerinde Görselleştirme---------
+
+import folium
+from folium.plugins import HeatMap
+
+# Harita üzerinde deprem lokasyonlarını görselleştirme
+m = folium.Map(location=[39.9334, 32.8597], zoom_start=6)
+
+# Deprem lokasyonlarını haritaya ekleme
+for index, row in df.iterrows():
+    folium.CircleMarker(location=[row['Latitude'], row['Longitude']],
+                        radius=row['Magnitude'] * 2,
+                        popup=f"{row['Magnitude']} Magnitude",
+                        color='red',
+                        fill=True).add_to(m)
+
+# Haritayı kaydetme ve gösterme
+map_file_path = 'C:\\Users\\Burhan Yasa\\Desktop\\turkey_earthquake_map.html'
+m.save(map_file_path)
+
+# Haritayı web tarayıcısında açma
+import webbrowser
+webbrowser.open(map_file_path)
+
+
+
+
+------------Kümelenme Analizi (Clustering Analysis)-----------
+
+
+print(df.isnull().sum())
+
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+# Veriyi hazırlama
+X = df[['Magnitude', 'Depth_km']]
+
+# K-means modelini oluşturma
+kmeans = KMeans(n_clusters=3)
+kmeans.fit(X)
+
+# Kümeleri tahmin etme
+df['Cluster'] = kmeans.labels_
+
+# Kümeleri görselleştirme
+plt.figure(figsize=(12, 6))
+plt.scatter(df['Magnitude'], df['Depth_km'], c=df['Cluster'], cmap='viridis')
+plt.xlabel('Deprem Büyüklüğü (Mw)')
+plt.ylabel('Derinlik (km)')
+plt.title('K-means Kümelenme Analizi')
+plt.show()
+
+
+
+
+
+------------(GIS) Analiz-----------
+
+import geopandas as gpd
+from shapely.geometry import Point
+
+# Load world data
+world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+
+# Filter for Turkey using the country name, assuming 'name' is the column with country names
+turkey = world[world['name'] == 'Turkey']
+
+# Assuming 'Longitude' and 'Latitude' are columns in your earthquake data DataFrame `df`
+geometry = [Point(xy) for xy in zip(df['Longitude'], df['Latitude'])]
+geo_df = gpd.GeoDataFrame(df, geometry=geometry)
+
+# Plotting
+fig, ax = plt.subplots(1, figsize=(10, 6))
+turkey.plot(ax=ax, color='white', edgecolor='black')
+geo_df.plot(ax=ax, markersize=5, color='red', marker='o')  # Adjust markersize/color as needed
+plt.title('Deprem Yoğunluk Haritası - Türkiye')
+plt.show()
+
+
+
+
+-----------Random Forest Regresyon-----------
+
+
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+
+# Giriş ve çıkış değişkenlerini hazırlama
+X = df[['Latitude', 'Longitude', 'Depth_km']]
+y = df['Magnitude']
+
+# Veriyi eğitim ve test setlerine ayırma
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Modeli oluşturma ve eğitme
+rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
+
+# Tahminleri yapma
+y_pred = rf_model.predict(X_test)
+
+# Model performansını değerlendirme
+mse = mean_squared_error(y_test, y_pred)
+print(f"Mean Squared Error: {mse}")
+
+# Tahminleri görselleştirme
+plt.figure(figsize=(12, 6))
+plt.scatter(y_test, y_pred)
+plt.xlabel('Gerçek Büyüklük')
+plt.ylabel('Tahmin Edilen Büyüklük')
+plt.title('Gerçek ve Tahmin Edilen Deprem Büyüklükleri')
+plt.show()
+
+
+----------------Lineer Regresyon-------------
+
+
+print(df.isnull().sum())
+# NaN değerleri içeren satırları kaldırma
+df = df.dropna(subset=['Magnitude', 'Depth_km'])
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Model için bağımsız değişkenler (X) ve bağımlı değişken (y) seçimi
+X = df[['Latitude', 'Longitude', 'Depth_km']]  # Bağımsız değişkenler
+y = df['Magnitude']  # Bağımlı değişken
+
+# Eğitim ve test veri setlerini ayırma
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Regresyon modelini oluşturma ve eğitme
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Modelin eğitim veri setine göre performansını değerlendirme
+y_pred_train = model.predict(X_train)
+train_rmse = mean_squared_error(y_train, y_pred_train, squared=False)
+train_r2 = r2_score(y_train, y_pred_train)
+
+print(f"Eğitim veri seti için RMSE: {train_rmse:.2f}")
+print(f"Eğitim veri seti için R^2 skoru: {train_r2:.2f}")
+
+# Test veri seti üzerinde modelin performansını değerlendirme
+y_pred_test = model.predict(X_test)
+test_rmse = mean_squared_error(y_test, y_pred_test, squared=False)
+test_r2 = r2_score(y_test, y_pred_test)
+
+print(f"Test veri seti için RMSE: {test_rmse:.2f}")
+print(f"Test veri seti için R^2 skoru: {test_r2:.2f}")
+
+
+
+
+--------------SARIMA------------
+
+
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+
+# Günlük deprem sayısını hesaplama
+daily_earthquakes = df['Magnitude'].resample('D').count()
+
+# Mevsimsel etkileri belirlemek için veriyi inceleme
+fig, ax = plt.subplots(figsize=(12, 6))
+daily_earthquakes.plot(ax=ax)
+plt.xlabel('Tarih')
+plt.ylabel('Günlük Deprem Sayısı')
+plt.title('Günlük Deprem Sayıları')
+plt.show()
+
+# SARIMA modelini oluşturma ve eğitme
+sarima_model = sm.tsa.statespace.SARIMAX(daily_earthquakes, order=(1, 1, 1), seasonal_order=(1, 1, 1, 12))
+sarima_results = sarima_model.fit()
+
+# Tahminleri ve güven aralıklarını alalım
+sarima_forecast = sarima_results.get_forecast(steps=40)
+sarima_forecast_index = pd.date_range(start=daily_earthquakes.index[-1], periods=40, freq='D')
+sarima_forecast_mean = sarima_forecast.predicted_mean
+sarima_forecast_ci = sarima_forecast.conf_int()
+
+# Grafik çizme
+plt.figure(figsize=(12, 6))
+plt.plot(daily_earthquakes.index, daily_earthquakes, label='Günlük Deprem Sayısı')
+plt.plot(sarima_forecast_index, sarima_forecast_mean, label='SARIMA Tahmini', color='green')
+plt.fill_between(sarima_forecast_index, sarima_forecast_ci.iloc[:, 0], sarima_forecast_ci.iloc[:, 1], color='lightgreen')
+plt.xlabel('Tarih')
+plt.ylabel('Deprem Sayısı')
+plt.title('SARIMA Modeli ile Deprem Tahmini')
+plt.legend()
+plt.show()
+
+
+
+-----------  LSTM   ------------
+
+
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM
+import matplotlib.pyplot as plt
+
+# Veri hazırlığı
+daily_earthquakes = df.resample('D').size()
+
+# Veriyi ölçeklendirme
+scaler = MinMaxScaler(feature_range=(0, 1))
+scaled_data = scaler.fit_transform(daily_earthquakes.values.reshape(-1, 1))
+
+# Eğitim ve test veri setlerinin oluşturulması
+train_size = int(len(scaled_data) * 0.8)
+train_data = scaled_data[:train_size]
+test_data = scaled_data[train_size:]
+
+def create_dataset(data, time_step=1):
+    X, y = [], []
+    for i in range(len(data) - time_step - 1):
+        a = data[i:(i + time_step), 0]
+        X.append(a)
+        y.append(data[i + time_step, 0])
+    return np.array(X), np.array(y)
+
+time_step = 30
+X_train, y_train = create_dataset(train_data, time_step)
+X_test, y_test = create_dataset(test_data, time_step)
+
+# Veriyi LSTM için uygun hale getirme
+X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
+X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
+
+# Modeli oluşturma
+model = Sequential()
+model.add(LSTM(50, return_sequences=True, input_shape=(time_step, 1)))
+model.add(LSTM(50, return_sequences=False))
+model.add(Dense(25))
+model.add(Dense(1))
+
+# Modeli derleme
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Modeli eğitme
+model.fit(X_train, y_train, batch_size=1, epochs=1)
+
+# Tahmin yapma
+train_predict = model.predict(X_train)
+test_predict = model.predict(X_test)
+
+# Tahminleri ölçekten geri çevirme
+train_predict = scaler.inverse_transform(train_predict)
+test_predict = scaler.inverse_transform(test_predict)
+
+# Grafikle sonuçları gösterme
+plt.figure(figsize=(12, 6))
+plt.plot(daily_earthquakes, label='Gerçek Veriler')
+plt.plot(daily_earthquakes.index[time_step:len(train_predict) + time_step], train_predict, label='Eğitim Tahminleri')
+plt.plot(daily_earthquakes.index[len(train_predict) + (time_step * 2) + 1:len(daily_earthquakes) - 1], test_predict, label='Test Tahminleri')
+plt.xlabel('Tarih')
+plt.ylabel('Deprem Sayısı')
+plt.title('LSTM ile Tahminler')
+plt.legend()
+plt.show()
+
+
+--------------   SVM     -----------
+
+
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix
+
+# Veri hazırlığı
+X = df[['Depth_km', 'Latitude', 'Longitude']]
+y = (df['Magnitude'] >= 5).astype(int)  # Magnitude 5 ve üzeri depremleri sınıflandırmak
+
+# Eğitim ve test veri setlerinin oluşturulması
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Modeli oluşturma
+svm_model = SVC(kernel='rbf')
+
+# Modeli eğitme
+svm_model.fit(X_train, y_train)
+
+# Tahmin yapma
+y_pred = svm_model.predict(X_test)
+
+# Sonuçları değerlendirme
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+
+
+# CNN ve Autoencoders gibi derin öğrenme modelleri genellikle büyük veri setleri ve görüntü verileri üzerinde etkilidir.
+# Ancak, deprem verileri için daha uygun bir örnek olarak Autoencoder ile anomali tespiti yapılabilir.
+
+from tensorflow.keras.layers import Input, Dense
+from tensorflow.keras.models import Model
+
+# Autoencoder modeli
+input_dim = X_train.shape[1]
+input_layer = Input(shape=(input_dim,))
+encoder = Dense(64, activation='relu')(input_layer)
+encoder = Dense(32, activation='relu')(encoder)
+decoder = Dense(64, activation='relu')(encoder)
+decoder = Dense(input_dim, activation='sigmoid')(decoder)
+
+autoencoder = Model(inputs=input_layer, outputs=decoder)
+autoencoder.compile(optimizer='adam', loss='mean_squared_error')
+
+# Modeli eğitme
+autoencoder.fit(X_train, X_train, epochs=50, batch_size=32, validation_data=(X_test, X_test))
+
+# Anomali tespiti
+reconstructions = autoencoder.predict(X_test)
+mse = np.mean(np.power(X_test - reconstructions, 2), axis=1)
+threshold = np.percentile(mse, 95)
+anomalies = mse > threshold
+
+print(f'Anomalies detected: {np.sum(anomalies)}')
+
+
+
+-------- KESTİRİMCİ ----------
+
+
+from sklearn.ensemble import GradientBoostingRegressor
+
+# Veri hazırlığı
+X = df[['Depth_km', 'Latitude', 'Longitude']]
+y = df['Magnitude']
+
+# Eğitim ve test veri setlerinin oluşturulması
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Modeli oluşturma
+gbm_model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1)
+
+# Modeli eğitme
+gbm_model.fit(X_train, y_train)
+
+# Tahmin yapma
+y_pred = gbm_model.predict(X_test)
+
+# Sonuçları değerlendirme
+print(f'Mean Absolute Error: {np.mean(np.abs(y_test - y_pred))}')
+print(f'R^2 Score: {gbm_model.score(X_test, y_test)}')
+
+
+
+
+--------------  ANOMALİ --------------
+
+
+import folium
+from folium.plugins import HeatMap
+
+# Verilerinizi lat-long koordinatlarına sahip bir DataFrame olarak hazırlayın
+anomalies_df = df[df['Cluster'] == 1]
+
+# Türkiye haritasını oluşturma
+m = folium.Map(location=[39.0, 35.0], zoom_start=6)
+
+# Anomalileri haritaya ekleme
+for _, row in anomalies_df.iterrows():
+    folium.CircleMarker(
+        location=[row['Latitude'], row['Longitude']],
+        radius=5,
+        color='red',
+        fill=True,
+        fill_color='red'
+    ).add_to(m)
+
+# Haritayı gösterme
+m.save('anomalies_map.html')
+m
+
+
+--------------------------------
+
+
+
+print(df.columns)
+Index(['Latitude', 'Longitude', 'Depth_km', 'Magnitude', 'Cluster'], dtype='object')
+# Anomali olan satırları filtrele
+anomalies_df = df[df['Cluster'] == 1]
+# Anomali olan satırları filtrele
+anomalies_df = df[df['Cluster'] == 1]
+
+# Anomalileri kontrol et
+print(anomalies_df)
+
+
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+# Türkiye haritasını yükle
+world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+turkey = world[world.name == "Turkey"]
+
+# Anomalileri içeren DataFrame
+anomalies_df = df[df['Cluster'] == 1]
+
+# Türkiye haritasını çiz
+fig, ax = plt.subplots(figsize=(10, 10))
+turkey.plot(ax=ax, color='white', edgecolor='black')
+
+# Anomalileri haritada göster
+plt.scatter(anomalies_df['Longitude'], anomalies_df['Latitude'], color='red', s=10, label='Anomalies')
+
+# Başlık ve etiketler
+plt.title('Anomalies on Turkey Map')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
