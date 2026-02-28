@@ -75,8 +75,6 @@ Depremler belirli bölgelerde yoğunlaşma göstermektedir.
 
 Zaman serisi modelleri kısa vadeli tahminlerde tutarlı sonuçlar üretmiştir.
 
-Autoencoder yöntemi olağandışı sismik olayları ayırt edebilmiştir.
-
 🎯 Conclusion
 
 Bu proje, deprem verileri üzerinde istatistiksel analiz, zaman serisi modelleme, ve coğrafi görselleştirme tekniklerini entegre eden kapsamlı bir analitik çalışma sunmaktadır.
