@@ -41,29 +41,17 @@ Amaç; sismik aktivitenin zamansal örüntüsünü anlamak ve tahmin edilebilirl
 
 🤖 Predictive Modeling – Magnitude Estimation
 
-Deprem büyüklüğünü tahmin etmek amacıyla regresyon modelleri geliştirildi:
+Latitude, Longitude ve Depth değişkenleri kullanılarak büyüklük tahmini yapılmıştır.
 
-Random Forest Regressor
+Gradient Boosting Regressor ile model geliştirilmiş, performans RMSE ve R² metrikleri ile ölçülmüştür.
 
-Linear Regression
-
-Model performansı RMSE ve R² metrikleri ile değerlendirildi ve karşılaştırıldı.
-
-🚨 Anomaly Detection
-
-Deprem verilerindeki olağandışı örüntüleri tespit etmek amacıyla:
-
-Autoencoder tabanlı anomali tespiti modeli uygulandı
-
-Bu yöntem, ekstrem büyüklükteki veya sıra dışı özelliklere sahip depremlerin belirlenmesini sağladı.
+Tahmin sonuçları, depremlerin büyüklüğünü anlamada belirli bir açıklayıcılık sağlamaktadır.
 
 🌍 Geospatial Visualization
 
-Folium ve GeoPandas kullanılarak deprem lokasyonları harita üzerinde görselleştirildi
+GeoPandas kullanılarak deprem lokasyonları harita üzerinde görselleştirildi
 
 Yoğunluk bölgeleri analiz edildi
-
-Anomaliler coğrafi olarak işaretlendi
 
 Bu adım, mekânsal örüntülerin daha net yorumlanmasını sağladı.
 
@@ -87,12 +75,10 @@ Depremler belirli bölgelerde yoğunlaşma göstermektedir.
 
 Zaman serisi modelleri kısa vadeli tahminlerde tutarlı sonuçlar üretmiştir.
 
-Makine öğrenmesi modelleri büyüklük tahmininde anlamlı performans göstermiştir.
-
 Autoencoder yöntemi olağandışı sismik olayları ayırt edebilmiştir.
 
 🎯 Conclusion
 
-Bu proje, deprem verileri üzerinde istatistiksel analiz, zaman serisi modelleme, makine öğrenmesi ve coğrafi görselleştirme tekniklerini entegre eden kapsamlı bir analitik çalışma sunmaktadır.
+Bu proje, deprem verileri üzerinde istatistiksel analiz, zaman serisi modelleme, ve coğrafi görselleştirme tekniklerini entegre eden kapsamlı bir analitik çalışma sunmaktadır.
 
 Amaç yalnızca tahmin üretmek değil; sismik verinin yapısını anlamak, örüntüleri ortaya çıkarmak ve farklı analitik yaklaşımları karşılaştırmalı olarak değerlendirmektir.
