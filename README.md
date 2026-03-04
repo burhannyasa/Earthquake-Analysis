@@ -1,82 +1,59 @@
-🌍 Comprehensive Earthquake Data Analysis & Predictive Modeling
-📌 Project Overview
+# 🌍 Comprehensive Earthquake Data Analysis & Predictive Modeling
 
+## 📌 Project Overview
 Bu proje, Türkiye’deki tarihsel deprem verileri üzerinde kapsamlı veri analizi, zaman serisi modelleme ve makine öğrenmesi uygulamaları içermektedir.
 
-Amaç; deprem dağılımını istatistiksel olarak incelemek, günlük deprem sayısını tahmin etmek, deprem büyüklüklerini modellemek ve olağandışı sismik örüntüleri tespit etmektir.
+**Temel Amaçlar:**
+* Deprem dağılımını istatistiksel olarak incelemek.
+* Günlük deprem sayısını tahmin etmek.
+* Deprem büyüklüklerini modellemek ve olağandışı sismik örüntüleri tespit etmektir.
 
-Proje; veri ön işleme, keşifsel analiz, zaman serisi modelleme, regresyon ve anomali tespiti adımlarını kapsayan uçtan uca bir analitik süreç sunmaktadır.
+---
 
-📊 Data Understanding & Preprocessing
+## 📊 Data Understanding & Preprocessing
+Uçtan uca analitik süreç için veri şu adımlardan geçirilmiştir:
+* **Feature Engineering:** Tarih ve saat değişkenleri birleştirilerek zaman serisi formatına dönüştürüldü.
+* **Cleaning:** Eksik ve tutarsız gözlemler temizlendi.
+* **Transformation:** Günlük deprem sayısı türetilerek analiz için veri sadeleştirildi.
 
-Tarih ve saat değişkenleri birleştirilerek zaman serisi formatına dönüştürüldü
+---
 
-Eksik ve tutarsız gözlemler temizlendi
+## 📈 Exploratory Data Analysis (EDA)
 
-Günlük deprem sayısı türetildi
+* Deprem büyüklüğü ve derinlik dağılımı incelendi.
+* Günlük deprem sayısının zaman içindeki değişimi analiz edildi.
+* Bölgesel yoğunluk ve coğrafi dağılım görselleştirildi.
 
-Analiz için gerekli değişkenler seçilerek veri sadeleştirildi
+---
 
-📈 Exploratory Data Analysis (EDA)
+## ⏳ Time Series Modeling
+Günlük deprem sayısı üzerinden sismik aktivitenin zamansal örüntüsünü anlamak için şu modeller kullanıldı:
+* **ARIMA:** Kısa vadeli tahminler üretildi.
+* **SARIMA:** Mevsimsel etkiler modele dahil edildi.
+* **Evaluation:** Model performansı geçmiş veriler üzerinden değerlendirildi.
 
-Deprem büyüklüğü ve derinlik dağılımı incelendi
+---
 
-Günlük deprem sayısının zaman içindeki değişimi analiz edildi
+## 🤖 Predictive Modeling – Magnitude Estimation
+Latitude, Longitude ve Depth değişkenleri kullanılarak büyüklük tahmini yapılmıştır:
+* **Algorithm:** Gradient Boosting Regressor.
+* **Metrics:** Performans $RMSE$ ve $R^2$ metrikleri ile ölçülmüştür.
 
-Bölgesel yoğunluk ve coğrafi dağılım görselleştirildi
+---
 
-Bu aşama, modelleme öncesi veri davranışının anlaşılmasını sağlamıştır.
+## 🗺️ Geospatial Visualization
 
-⏳ Time Series Modeling
+* **GeoPandas** kullanılarak deprem lokasyonları harita üzerinde görselleştirildi.
+* Yoğunluk bölgeleri analiz edilerek mekânsal örüntüler yorumlandı.
 
-Günlük deprem sayısı üzerinden zaman serisi analizi gerçekleştirildi.
+---
 
-ARIMA modeli ile kısa vadeli tahminler üretildi
+## 🛠 Technologies Used
+* **Language:** Python
+* **Libraries:** Pandas, NumPy, Scikit-Learn, TensorFlow / Keras
+* **Visualization:** Matplotlib, Seaborn, GeoPandas
 
-SARIMA modeli ile mevsimsel etkiler modele dahil edildi
+---
 
-Model performansı geçmiş veriler üzerinden değerlendirildi
-
-Amaç; sismik aktivitenin zamansal örüntüsünü anlamak ve tahmin edilebilirliğini test etmektir.
-
-🤖 Predictive Modeling – Magnitude Estimation
-
-Latitude, Longitude ve Depth değişkenleri kullanılarak büyüklük tahmini yapılmıştır.
-
-Gradient Boosting Regressor ile model geliştirilmiş, performans RMSE ve R² metrikleri ile ölçülmüştür.
-
-Tahmin sonuçları, depremlerin büyüklüğünü anlamada belirli bir açıklayıcılık sağlamaktadır.
-
-🌍 Geospatial Visualization
-
-GeoPandas kullanılarak deprem lokasyonları harita üzerinde görselleştirildi
-
-Yoğunluk bölgeleri analiz edildi
-
-Bu adım, mekânsal örüntülerin daha net yorumlanmasını sağladı.
-
-🛠 Technologies Used
-
-Python
-
-Pandas, NumPy
-
-Scikit-Learn
-
-TensorFlow / Keras
-
-Matplotlib, Seaborn
-
-GeoPandas
-
-📌 Key Insights
-
-Depremler belirli bölgelerde yoğunlaşma göstermektedir.
-
-Zaman serisi modelleri kısa vadeli tahminlerde tutarlı sonuçlar üretmiştir.
-
-🎯 Conclusion
-
-Bu proje, deprem verileri üzerinde istatistiksel analiz, zaman serisi modelleme, ve coğrafi görselleştirme tekniklerini entegre eden kapsamlı bir analitik çalışma sunmaktadır.
-
-Amaç yalnızca tahmin üretmek değil; sismik verinin yapısını anlamak, örüntüleri ortaya çıkarmak ve farklı analitik yaklaşımları karşılaştırmalı olarak değerlendirmektir.
+## 🎯 Conclusion
+Bu proje, deprem verileri üzerinde istatistiksel analiz ve makine öğrenmesi tekniklerini entegre eden kapsamlı bir çalışmadır. Amaç yalnızca tahmin üretmek değil; sismik verinin yapısını anlamak ve örüntüleri ortaya çıkarmaktır.
