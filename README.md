@@ -67,7 +67,7 @@ TensorFlow / Keras
 
 Matplotlib, Seaborn
 
-Folium, GeoPandas
+GeoPandas
 
 📌 Key Insights
 
