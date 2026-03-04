@@ -5,55 +5,63 @@ Bu proje, Türkiye’deki tarihsel deprem verileri üzerinde kapsamlı veri anal
 
 **Temel Amaçlar:**
 * Deprem dağılımını istatistiksel olarak incelemek.
-* Günlük deprem sayısını tahmin etmek.
-* Deprem büyüklüklerini modellemek ve olağandışı sismik örüntüleri tespit etmektir.
+* Günlük deprem sayısını tahmin etmek (Forecasting).
+* Deprem büyüklüklerini modellemek ve sismik anomali tespiti gerçekleştirmek.
 
 ---
 
 ## 📊 Data Understanding & Preprocessing
-Uçtan uca analitik süreç için veri şu adımlardan geçirilmiştir:
-* **Feature Engineering:** Tarih ve saat değişkenleri birleştirilerek zaman serisi formatına dönüştürüldü.
-* **Cleaning:** Eksik ve tutarsız gözlemler temizlendi.
-* **Transformation:** Günlük deprem sayısı türetilerek analiz için veri sadeleştirildi.
+Analitik süreç, verinin güvenilirliğini artırmak adına şu adımları kapsamaktadır:
+* **Feature Engineering:** Zaman bazlı analizler için tarih ve saat değişkenleri birleştirilerek `datetime` formatına dönüştürüldü.
+* **Cleaning:** Eksik ve tutarsız gözlemler veri setinden temizlendi.
+* **Transformation:** Zaman serisi modelleri için günlük deprem frekansları (count) türetildi.
 
 ---
 
 ## 📈 Exploratory Data Analysis (EDA)
+Verinin istatistiksel yapısını ve dağılım özelliklerini anlamak için yapılan analizler:
 
-* Deprem büyüklüğü ve derinlik dağılımı incelendi.
-* Günlük deprem sayısının zaman içindeki değişimi analiz edildi.
-* Bölgesel yoğunluk ve coğrafi dağılım görselleştirildi.
+![Magnitude Distribution](outputs/earthquake_magnitude_distribution.png)
+* **Dağılım Analizi:** Deprem büyüklüğü ($M_w$) ve derinlik ($depth$) değişkenlerinin frekans dağılımları incelenmiştir.
+* **Trend Analizi:** Günlük deprem sayısının yıllara göre değişimi, sismik hareketliliğin yoğunlaştığı dönemleri belirlemek için görselleştirilmiştir.
+
+![Daily Count Trend](outputs/daily_earthquake_counts.png)
 
 ---
 
 ## ⏳ Time Series Modeling
-Günlük deprem sayısı üzerinden sismik aktivitenin zamansal örüntüsünü anlamak için şu modeller kullanıldı:
-* **ARIMA:** Kısa vadeli tahminler üretildi.
-* **SARIMA:** Mevsimsel etkiler modele dahil edildi.
-* **Evaluation:** Model performansı geçmiş veriler üzerinden değerlendirildi.
+Sismik aktivitenin zamansal örüntüsünü çözümlemek amacıyla gelişmiş zaman serisi modelleri kullanılmıştır:
+* **ARIMA & SARIMA:** Mevsimsel etkiler ve trend bileşenleri modele dahil edilerek kısa vadeli tahminler üretilmiştir.
+* **Evaluation:** Model başarımı geçmiş veriler üzerinden test edilerek doğrulanmıştır.
+
+![SARIMA Forecast](outputs/sarima_forecast_results.png)
 
 ---
 
 ## 🤖 Predictive Modeling – Magnitude Estimation
-Latitude, Longitude ve Depth değişkenleri kullanılarak büyüklük tahmini yapılmıştır:
-* **Algorithm:** Gradient Boosting Regressor.
-* **Metrics:** Performans $RMSE$ ve $R^2$ metrikleri ile ölçülmüştür.
+Coğrafi koordinatlar (Latitude, Longitude) ve derinlik (Depth) bilgileri kullanılarak deprem büyüklüğü tahmini yapılmıştır:
+* **Algorithm:** Gradient Boosting Regressor (GBR).
+* **Metrics:** Model performansı $RMSE$ ve $R^2$ metrikleri ile değerlendirilmiştir.
 
 ---
 
 ## 🗺️ Geospatial Visualization
+Mekânsal örüntüleri ve riskli bölgeleri belirlemek için coğrafi analiz teknikleri uygulanmıştır:
 
-* **GeoPandas** kullanılarak deprem lokasyonları harita üzerinde görselleştirildi.
-* Yoğunluk bölgeleri analiz edilerek mekânsal örüntüler yorumlandı.
+![Geospatial Anomaly Map](outputs/geospatial_anomaly_map.png)
+* **GeoPandas** entegrasyonu ile sismik veriler Türkiye haritası üzerinde koordinat bazlı görselleştirilmiştir.
+* Yoğunluk (Kernel Density) analizi ile anomaliler ve sismik odak noktaları yorumlanmıştır.
 
 ---
 
 ## 🛠 Technologies Used
 * **Language:** Python
-* **Libraries:** Pandas, NumPy, Scikit-Learn, TensorFlow / Keras
+* **Data Ops:** Pandas, NumPy
+* **ML/DL:** Scikit-Learn, TensorFlow / Keras
+* **Statistics:** Statsmodels (ARIMA/SARIMA)
 * **Visualization:** Matplotlib, Seaborn, GeoPandas
 
 ---
 
 ## 🎯 Conclusion
-Bu proje, deprem verileri üzerinde istatistiksel analiz ve makine öğrenmesi tekniklerini entegre eden kapsamlı bir çalışmadır. Amaç yalnızca tahmin üretmek değil; sismik verinin yapısını anlamak ve örüntüleri ortaya çıkarmaktır.
+Bu çalışma, deprem verilerini sadece görselleştirmekle kalmayıp; istatistiksel yöntemler ve makine öğrenmesi modellerini birleştirerek sismik verinin doğasını anlamayı amaçlar. Proje sonunda elde edilen bulgular, kısa vadeli sismik tahminlerin ve mekânsal anomali tespitinin potansiyelini ortaya koymaktadır.
